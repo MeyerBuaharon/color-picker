@@ -9,15 +9,38 @@ interface IHsl {
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  width: 101px;
+  width: 100px;
 `;
 
 const ColorDiv = styled.div`
   height: 101px;
   width: 101px;
-  background: linear-gradient(rgba(255, 255, 255, 0.75), rgba(0, 0, 0, 0.8)),
-    radial-gradient(at 100% 50%, rgba(255, 0, 0, 1) 45%, rgba(0, 0, 0, 0.5) 90%);
+  background: rgba(255, 0, 0, 1);
+  position: relative;
   display: flex;
+  border: 1px solid black;
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+`;
+const Overlay2 = styled(Overlay)`
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(0, 0, 0, 0) 20%,
+    rgba(0, 0, 0, 1) 100%
+  );
 `;
 
 const Pointer = styled.div`
@@ -25,7 +48,7 @@ const Pointer = styled.div`
   position: absolute;
   height: 18px;
   border-radius: 50%;
-  transform: translate(-9px, -1px);
+  transform: translate(-50%, -50%);
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
   background-color: rgb(248, 248, 248);
   z-index: 99;
@@ -50,6 +73,9 @@ const App = () => {
     saturation: 50,
   });
   const [isDragging, setIsDragging] = useState(false);
+  const [text, setText] = useState(
+    `hsl(${hsl.hue},${hsl.saturation}%,${100 - hsl.lightness}%)`
+  );
 
   const onChangeText = (e: ChangeEvent<HTMLInputElement>) => {
     const {
@@ -62,8 +88,11 @@ const App = () => {
         .replaceAll("%", "")
         .split(",")
         .map((color) => parseInt(color));
-      setHsl({ hue: colors[0], saturation: colors[1], lightness: colors[2] });
+      if (colors.every((color) => color <= 100 && color >= 0)) {
+        setHsl({ hue: colors[0], saturation: colors[1], lightness: colors[2] });
+      }
     }
+    setText(value);
   };
 
   const onMouseDown = () => setIsDragging(true);
@@ -71,11 +100,18 @@ const App = () => {
   const onMouseUp = () => setIsDragging(false);
 
   const onClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    setHsl((prevColor) => ({
-      hue: prevColor.hue,
-      saturation: e.pageX > 100 ? 100 : e.pageX,
-      lightness: e.pageY > 100 ? 100 : e.pageY,
-    }));
+    setHsl((prevColor) => {
+      const newHsl = {
+        hue: prevColor.hue,
+        saturation: e.clientX > 100 ? 100 : e.clientX,
+        lightness: e.clientY > 100 ? 100 : e.clientY,
+      };
+      setText(
+        `hsl(${newHsl.hue},${newHsl.saturation}%,${100 - newHsl.lightness}%)`
+      );
+
+      return newHsl;
+    });
   };
 
   const onMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -92,15 +128,13 @@ const App = () => {
         onMouseMove={onMouseMove}
         onClick={onClick}
       >
-        <Pointer hsl={hsl} />
+        <Overlay>
+          <Overlay2 />
+        </Overlay>
+        <Pointer draggable={false} hsl={hsl} />
       </ColorDiv>
       <PickedColor hsl={hsl} />
-      <input
-        disabled
-        type="text"
-        value={`hsl(${hsl.hue},${hsl.saturation}%,${100 - hsl.lightness}%)`}
-        onChange={onChangeText}
-      ></input>
+      <input type="text" value={text} onChange={onChangeText} disabled></input>
     </Wrapper>
   );
 };

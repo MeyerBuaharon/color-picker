@@ -1,23 +1,22 @@
 import React, { useState, ChangeEvent } from "react";
 import styled from "styled-components";
 
-const Wrapper = styled.div`
-  display: flex;
-`;
-
 interface IHsl {
   hue: number;
   saturation: number;
   lightness: number;
 }
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 
 const ColorDiv = styled.div`
   height: 101px;
   width: 101px;
-  background-color: ${({ hsl }: { hsl: IHsl }) =>
-    `hsl(${hsl.hue},${hsl.saturation}%,${hsl.lightness}%)`};
+  background: linear-gradient(rgba(255, 255, 255, 0.75), rgba(0, 0, 0, 0.8)),
+    radial-gradient(at 100% 50%, rgba(255, 0, 0, 1) 45%, rgba(0, 0, 0, 0.5) 90%);
   display: flex;
-  flex-direction: column-reverse;
 `;
 
 const Pointer = styled.div`
@@ -31,6 +30,16 @@ const Pointer = styled.div`
   z-index: 99;
   left: ${({ hsl }: { hsl: IHsl }) => hsl.saturation}px;
   top: ${({ hsl }: { hsl: IHsl }) => hsl.lightness}px;
+`;
+
+const PickedColor = styled.div`
+  height: 20px;
+  width: 101px;
+  margin: 5px 0;
+  background-color: ${({ hsl }: { hsl: IHsl }) =>
+    `hsl(${hsl.hue},${hsl.saturation}%,${100 - hsl.lightness}%)`};
+  display: flex;
+  flex-direction: column;
 `;
 
 const App = () => {
@@ -81,11 +90,10 @@ const App = () => {
         onMouseUp={onMouseUp}
         onMouseMove={onMouseMove}
         onClick={onClick}
-        hsl={hsl}
       >
         <Pointer hsl={hsl} />
       </ColorDiv>
-
+      <PickedColor hsl={hsl} />
       <input
         disabled
         type="text"

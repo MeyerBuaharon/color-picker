@@ -9,6 +9,7 @@ interface IHsl {
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
+  width: 101px;
 `;
 
 const ColorDiv = styled.div`
